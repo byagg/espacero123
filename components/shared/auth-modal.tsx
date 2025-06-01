@@ -3,29 +3,38 @@
 import { useState } from "react"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { LoginForm } from "./login-form"
-import { RegisterForm } from "./register-form"
+import { LoginForm } from "@/components/shared/login-form"
+import { RegisterForm } from "@/components/shared/register-form"
 import { X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 interface AuthModalProps {
-  isOpen: boolean
+  open?: boolean
+  isOpen?: boolean
   onClose: () => void
 }
 
-export function AuthModal({ isOpen, onClose }: AuthModalProps) {
+export function AuthModal({ open, isOpen, onClose }: AuthModalProps) {
   const [activeTab, setActiveTab] = useState<string>("login")
+  const modalOpen = open ?? isOpen ?? false
+
+  const handleLoginSuccess = () => {
+    onClose()
+  }
+
+  const handleRegisterSuccess = () => {
+    setActiveTab("login")
+  }
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={modalOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[480px] p-0 overflow-hidden bg-white border-gray-200">
-        {/* Header */}
         <div className="relative bg-amber-500 px-6 py-8 text-white">
           <Button
             variant="ghost"
             size="sm"
             onClick={onClose}
-            className="absolute top-4 right-4 text-white hover:bg-amber-600 h-8 w-8 p-0"
+            className="absolute top-4 right-4 text-white bg-amber-600 h-8 w-8 p-0"
           >
             <X className="h-4 w-4" />
           </Button>
@@ -37,7 +46,6 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
           </div>
         </div>
 
-        {/* Content */}
         <div className="p-6">
           <Tabs defaultValue="login" value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-6 bg-gray-100 p-1 rounded-lg">
@@ -56,19 +64,18 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
             </TabsList>
 
             <TabsContent value="login" className="mt-0">
-              <LoginForm onSuccess={onClose} />
+              <LoginForm onSuccess={handleLoginSuccess} />
             </TabsContent>
 
             <TabsContent value="register" className="mt-0">
-              <RegisterForm onSuccess={() => setActiveTab("login")} />
+              <RegisterForm onSuccess={handleRegisterSuccess} />
             </TabsContent>
           </Tabs>
         </div>
 
-        {/* Footer */}
         <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 text-center">
           <p className="text-sm text-gray-600">
-            {"Prihlásením súhlasíte s našimi "}
+            Prihlásením súhlasíte s našimi{" "}
             <a href="/legal" className="text-amber-600 hover:text-amber-700 font-medium">
               Podmienkami používania
             </a>

@@ -9,15 +9,27 @@ import { X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 interface AuthModalProps {
-  open: boolean
+  open?: boolean
+  isOpen?: boolean
   onClose: () => void
 }
 
-export function AuthModal({ open, onClose }: AuthModalProps) {
+export function AuthModal({ open, isOpen, onClose }: AuthModalProps) {
   const [activeTab, setActiveTab] = useState<string>("login")
+  const modalOpen = open ?? isOpen ?? false
+
+  const handleLoginSuccess = () => {
+    onClose()
+    // Presmerovanie sa vykoná automaticky v useAuth hook
+  }
+
+  const handleRegisterSuccess = () => {
+    // Po úspešnej registrácii prepni na login tab
+    setActiveTab("login")
+  }
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
+    <Dialog open={modalOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[480px] p-0 overflow-hidden bg-white border-gray-200">
         {/* Header */}
         <div className="relative bg-amber-500 px-6 py-8 text-white">
@@ -56,11 +68,11 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
             </TabsList>
 
             <TabsContent value="login" className="mt-0">
-              <LoginForm onSuccess={onClose} />
+              <LoginForm onSuccess={handleLoginSuccess} />
             </TabsContent>
 
             <TabsContent value="register" className="mt-0">
-              <RegisterForm onSuccess={() => setActiveTab("login")} />
+              <RegisterForm onSuccess={handleRegisterSuccess} />
             </TabsContent>
           </Tabs>
         </div>
@@ -68,11 +80,11 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
         {/* Footer */}
         <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 text-center">
           <p className="text-sm text-gray-600">
-            Prihlásením súhlasíte s našimi{" "}
+            {"Prihlásením súhlasíte s našimi "}
             <a href="/legal" className="text-amber-600 hover:text-amber-700 font-medium">
               Podmienkami používania
-            </a>{" "}
-            a{" "}
+            </a>
+            {" a "}
             <a href="/legal" className="text-amber-600 hover:text-amber-700 font-medium">
               Zásadami ochrany údajov
             </a>

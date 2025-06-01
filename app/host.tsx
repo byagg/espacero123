@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useAuth } from "@/hooks/use-auth"
 import { supabase } from "@/lib/supabase"
+import { RoleGuard } from "@/components/auth/role-guard"
 import {
   Euro,
   Calendar,
@@ -23,8 +24,6 @@ import {
   Star,
 } from "lucide-react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { AuthModal } from "@/components/auth/auth-modal"
 
 interface DashboardStats {
   totalVenues: number
@@ -59,17 +58,12 @@ export default function HostDashboard() {
   })
   const [recentBookings, setRecentBookings] = useState<RecentBooking[]>([])
   const [loading, setLoading] = useState(true)
-  const [showAuthModal, setShowAuthModal] = useState(false)
   const { user } = useAuth()
-  const router = useRouter()
 
   useEffect(() => {
-    if (!user) {
-      setLoading(false)
-      return
+    if (user) {
+      fetchDashboardData()
     }
-
-    fetchDashboardData()
   }, [user])
 
   const fetchDashboardData = async () => {
@@ -192,277 +186,262 @@ export default function HostDashboard() {
     })
   }
 
-  if (!user && !loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 py-12 px-4">
-        <div className="container mx-auto max-w-4xl">
-          <div className="bg-white p-8 rounded-lg shadow text-center">
-            <h1 className="text-2xl font-bold mb-4 text-gray-800">Dashboard pre hostiteľov</h1>
-            <p className="text-gray-600 mb-6">Pre prístup k dashboardu sa musíte prihlásiť.</p>
-            <Button className="bg-amber-500 hover:bg-amber-600" onClick={() => setShowAuthModal(true)}>
-              Prihlásiť sa
-            </Button>
-            <AuthModal open={showAuthModal} onClose={() => setShowAuthModal(false)} />
-          </div>
-        </div>
-      </div>
-    )
-  }
-
   return (
-    <div className="min-h-screen bg-gray-50 py-6 px-4">
-      <div className="container mx-auto max-w-7xl">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-800 mb-2">Dashboard hostiteľa</h1>
-              <p className="text-gray-600">
-                Vitajte späť, {user?.user_metadata?.full_name || "Hostiteľ"}! Tu je prehľad vašich priestorov.
-              </p>
-            </div>
-            <div className="mt-4 md:mt-0 flex gap-3">
-              <Link href="/venues/add">
-                <Button className="bg-amber-500 hover:bg-amber-600 text-white">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Pridať priestor
-                </Button>
-              </Link>
-              <Link href="/host/venues">
-                <Button variant="outline" className="border-amber-500 text-amber-600 hover:bg-amber-50">
-                  <MapPin className="h-4 w-4 mr-2" />
-                  Spravovať priestory
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-white border-gray-200 shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-600 text-sm font-medium">Celkový príjem (mesiac)</p>
-                  <p className="text-2xl font-bold text-gray-800">€{stats.monthlyRevenue}</p>
-                  <p className="text-green-600 text-sm flex items-center mt-1">
-                    <TrendingUp className="h-3 w-3 mr-1" />
-                    +12% oproti minulému mesiacu
-                  </p>
-                </div>
-                <div className="bg-amber-100 p-3 rounded-full">
-                  <Euro className="h-6 w-6 text-amber-600" />
-                </div>
+    <RoleGuard allowedRoles={["host", "admin"]}>
+      <div className="min-h-screen bg-gray-50 py-6 px-4">
+        <div className="container mx-auto max-w-7xl">
+          {/* Header */}
+          <div className="mb-8">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-800 mb-2">Dashboard hostiteľa</h1>
+                <p className="text-gray-600">
+                  Vitajte späť, {user?.user_metadata?.full_name || "Hostiteľ"}! Tu je prehľad vašich priestorov.
+                </p>
               </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white border-gray-200 shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-600 text-sm font-medium">Celkové rezervácie</p>
-                  <p className="text-2xl font-bold text-gray-800">{stats.totalBookings}</p>
-                  <p className="text-blue-600 text-sm flex items-center mt-1">
-                    <Calendar className="h-3 w-3 mr-1" />
-                    {stats.pendingBookings} čaká na potvrdenie
-                  </p>
-                </div>
-                <div className="bg-blue-100 p-3 rounded-full">
-                  <Calendar className="h-6 w-6 text-blue-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white border-gray-200 shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-600 text-sm font-medium">Moje priestory</p>
-                  <p className="text-2xl font-bold text-gray-800">{stats.totalVenues}</p>
-                  <p className="text-gray-600 text-sm flex items-center mt-1">
-                    <MapPin className="h-3 w-3 mr-1" />
-                    Aktívne priestory
-                  </p>
-                </div>
-                <div className="bg-green-100 p-3 rounded-full">
-                  <MapPin className="h-6 w-6 text-green-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white border-gray-200 shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-600 text-sm font-medium">Priemerné hodnotenie</p>
-                  <p className="text-2xl font-bold text-gray-800">{stats.averageRating}</p>
-                  <p className="text-yellow-600 text-sm flex items-center mt-1">
-                    <Star className="h-3 w-3 mr-1 fill-current" />
-                    Výborné hodnotenie
-                  </p>
-                </div>
-                <div className="bg-yellow-100 p-3 rounded-full">
-                  <Star className="h-6 w-6 text-yellow-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Recent Bookings */}
-          <div className="lg:col-span-2">
-            <Card className="bg-white border-gray-200 shadow-lg">
-              <CardHeader className="border-b border-gray-200">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-xl font-semibold text-gray-800">Najnovšie rezervácie</CardTitle>
-                  <Link href="/host/bookings">
-                    <Button variant="outline" size="sm" className="border-amber-500 text-amber-600 hover:bg-amber-50">
-                      Zobraziť všetky
-                    </Button>
-                  </Link>
-                </div>
-              </CardHeader>
-              <CardContent className="p-0">
-                {recentBookings.length === 0 ? (
-                  <div className="p-8 text-center">
-                    <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-800 mb-2">Žiadne rezervácie</h3>
-                    <p className="text-gray-600">Keď dostanete prvé rezervácie, zobrazia sa tu.</p>
-                  </div>
-                ) : (
-                  <div className="divide-y divide-gray-200">
-                    {recentBookings.map((booking) => (
-                      <div key={booking.id} className="p-6 hover:bg-gray-50 transition-colors">
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center justify-between mb-2">
-                              <h4 className="font-medium text-gray-800">{booking.venue_name}</h4>
-                              {getStatusBadge(booking.status)}
-                            </div>
-                            <p className="text-gray-600 text-sm mb-1">
-                              {formatDate(booking.start_datetime)} - {formatDate(booking.end_datetime)}
-                            </p>
-                            <div className="flex items-center text-gray-600 text-sm">
-                              <Users className="h-4 w-4 mr-1" />
-                              <span>{booking.guest_count} hostí</span>
-                              <span className="mx-2">•</span>
-                              <span className="font-medium text-amber-600">€{booking.total_price}</span>
-                            </div>
-                          </div>
-                          <div className="flex items-center space-x-2 ml-4">
-                            <Button variant="outline" size="sm" className="border-gray-300">
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            {booking.status === "pending" && (
-                              <Button size="sm" className="bg-amber-500 hover:bg-amber-600 text-white">
-                                Potvrdiť
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Quick Actions & Stats */}
-          <div className="space-y-6">
-            {/* Quick Actions */}
-            <Card className="bg-white border-gray-200 shadow-lg">
-              <CardHeader className="border-b border-gray-200">
-                <CardTitle className="text-lg font-semibold text-gray-800">Rýchle akcie</CardTitle>
-              </CardHeader>
-              <CardContent className="p-6 space-y-3">
+              <div className="mt-4 md:mt-0 flex gap-3">
                 <Link href="/venues/add">
-                  <Button className="w-full bg-amber-500 hover:bg-amber-600 text-white justify-start">
+                  <Button className="bg-amber-500 hover:bg-amber-600 text-white">
                     <Plus className="h-4 w-4 mr-2" />
-                    Pridať nový priestor
+                    Pridať priestor
                   </Button>
                 </Link>
                 <Link href="/host/venues">
-                  <Button variant="outline" className="w-full justify-start border-gray-300">
-                    <Edit className="h-4 w-4 mr-2" />
-                    Upraviť priestory
+                  <Button variant="outline" className="border-amber-500 text-amber-600 hover:bg-amber-50">
+                    <MapPin className="h-4 w-4 mr-2" />
+                    Spravovať priestory
                   </Button>
                 </Link>
-                <Link href="/host/analytics">
-                  <Button variant="outline" className="w-full justify-start border-gray-300">
-                    <BarChart3 className="h-4 w-4 mr-2" />
-                    Zobraziť štatistiky
-                  </Button>
-                </Link>
-                <Link href="/host/calendar">
-                  <Button variant="outline" className="w-full justify-start border-gray-300">
-                    <Calendar className="h-4 w-4 mr-2" />
-                    Kalendár rezervácií
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
+          </div>
 
-            {/* Booking Status Overview */}
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <Card className="bg-white border-gray-200 shadow-lg">
-              <CardHeader className="border-b border-gray-200">
-                <CardTitle className="text-lg font-semibold text-gray-800">Stav rezervácií</CardTitle>
-              </CardHeader>
-              <CardContent className="p-6 space-y-4">
+              <CardContent className="p-6">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <div className="w-3 h-3 bg-yellow-500 rounded-full mr-3"></div>
-                    <span className="text-gray-700">Čakajú na potvrdenie</span>
+                  <div>
+                    <p className="text-gray-600 text-sm font-medium">Celkový príjem (mesiac)</p>
+                    <p className="text-2xl font-bold text-gray-800">€{stats.monthlyRevenue}</p>
+                    <p className="text-green-600 text-sm flex items-center mt-1">
+                      <TrendingUp className="h-3 w-3 mr-1" />
+                      +12% oproti minulému mesiacu
+                    </p>
                   </div>
-                  <span className="font-medium text-gray-800">{stats.pendingBookings}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <div className="w-3 h-3 bg-green-500 rounded-full mr-3"></div>
-                    <span className="text-gray-700">Potvrdené</span>
+                  <div className="bg-amber-100 p-3 rounded-full">
+                    <Euro className="h-6 w-6 text-amber-600" />
                   </div>
-                  <span className="font-medium text-gray-800">{stats.confirmedBookings}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <div className="w-3 h-3 bg-blue-500 rounded-full mr-3"></div>
-                    <span className="text-gray-700">Ukončené</span>
-                  </div>
-                  <span className="font-medium text-gray-800">{stats.completedBookings}</span>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Performance Alert */}
-            {stats.pendingBookings > 0 && (
-              <Card className="bg-amber-50 border-amber-200 shadow-lg">
-                <CardContent className="p-6">
-                  <div className="flex items-start">
-                    <AlertCircle className="h-5 w-5 text-amber-600 mr-3 mt-0.5" />
-                    <div>
-                      <h4 className="font-medium text-amber-800 mb-1">Pozor!</h4>
-                      <p className="text-amber-700 text-sm">
-                        Máte {stats.pendingBookings} rezervácií čakajúcich na potvrdenie. Rýchle odpovede zlepšujú vaše
-                        hodnotenie.
-                      </p>
-                      <Link href="/host/bookings?status=pending">
-                        <Button size="sm" className="mt-3 bg-amber-500 hover:bg-amber-600 text-white">
-                          Potvrdiť rezervácie
-                        </Button>
-                      </Link>
+            <Card className="bg-white border-gray-200 shadow-lg">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-600 text-sm font-medium">Celkové rezervácie</p>
+                    <p className="text-2xl font-bold text-gray-800">{stats.totalBookings}</p>
+                    <p className="text-blue-600 text-sm flex items-center mt-1">
+                      <Calendar className="h-3 w-3 mr-1" />
+                      {stats.pendingBookings} čaká na potvrdenie
+                    </p>
+                  </div>
+                  <div className="bg-blue-100 p-3 rounded-full">
+                    <Calendar className="h-6 w-6 text-blue-600" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white border-gray-200 shadow-lg">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-600 text-sm font-medium">Moje priestory</p>
+                    <p className="text-2xl font-bold text-gray-800">{stats.totalVenues}</p>
+                    <p className="text-gray-600 text-sm flex items-center mt-1">
+                      <MapPin className="h-3 w-3 mr-1" />
+                      Aktívne priestory
+                    </p>
+                  </div>
+                  <div className="bg-green-100 p-3 rounded-full">
+                    <MapPin className="h-6 w-6 text-green-600" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white border-gray-200 shadow-lg">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-600 text-sm font-medium">Priemerné hodnotenie</p>
+                    <p className="text-2xl font-bold text-gray-800">{stats.averageRating}</p>
+                    <p className="text-yellow-600 text-sm flex items-center mt-1">
+                      <Star className="h-3 w-3 mr-1 fill-current" />
+                      Výborné hodnotenie
+                    </p>
+                  </div>
+                  <div className="bg-yellow-100 p-3 rounded-full">
+                    <Star className="h-6 w-6 text-yellow-600" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Recent Bookings */}
+            <div className="lg:col-span-2">
+              <Card className="bg-white border-gray-200 shadow-lg">
+                <CardHeader className="border-b border-gray-200">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-xl font-semibold text-gray-800">Najnovšie rezervácie</CardTitle>
+                    <Link href="/host/bookings">
+                      <Button variant="outline" size="sm" className="border-amber-500 text-amber-600 hover:bg-amber-50">
+                        Zobraziť všetky
+                      </Button>
+                    </Link>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-0">
+                  {recentBookings.length === 0 ? (
+                    <div className="p-8 text-center">
+                      <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-medium text-gray-800 mb-2">Žiadne rezervácie</h3>
+                      <p className="text-gray-600">Keď dostanete prvé rezervácie, zobrazia sa tu.</p>
                     </div>
+                  ) : (
+                    <div className="divide-y divide-gray-200">
+                      {recentBookings.map((booking) => (
+                        <div key={booking.id} className="p-6 hover:bg-gray-50 transition-colors">
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center justify-between mb-2">
+                                <h4 className="font-medium text-gray-800">{booking.venue_name}</h4>
+                                {getStatusBadge(booking.status)}
+                              </div>
+                              <p className="text-gray-600 text-sm mb-1">
+                                {formatDate(booking.start_datetime)} - {formatDate(booking.end_datetime)}
+                              </p>
+                              <div className="flex items-center text-gray-600 text-sm">
+                                <Users className="h-4 w-4 mr-1" />
+                                <span>{booking.guest_count} hostí</span>
+                                <span className="mx-2">•</span>
+                                <span className="font-medium text-amber-600">€{booking.total_price}</span>
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-2 ml-4">
+                              <Button variant="outline" size="sm" className="border-gray-300">
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              {booking.status === "pending" && (
+                                <Button size="sm" className="bg-amber-500 hover:bg-amber-600 text-white">
+                                  Potvrdiť
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Quick Actions & Stats */}
+            <div className="space-y-6">
+              {/* Quick Actions */}
+              <Card className="bg-white border-gray-200 shadow-lg">
+                <CardHeader className="border-b border-gray-200">
+                  <CardTitle className="text-lg font-semibold text-gray-800">Rýchle akcie</CardTitle>
+                </CardHeader>
+                <CardContent className="p-6 space-y-3">
+                  <Link href="/venues/add">
+                    <Button className="w-full bg-amber-500 hover:bg-amber-600 text-white justify-start">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Pridať nový priestor
+                    </Button>
+                  </Link>
+                  <Link href="/host/venues">
+                    <Button variant="outline" className="w-full justify-start border-gray-300">
+                      <Edit className="h-4 w-4 mr-2" />
+                      Upraviť priestory
+                    </Button>
+                  </Link>
+                  <Link href="/host/analytics">
+                    <Button variant="outline" className="w-full justify-start border-gray-300">
+                      <BarChart3 className="h-4 w-4 mr-2" />
+                      Zobraziť štatistiky
+                    </Button>
+                  </Link>
+                  <Link href="/host/calendar">
+                    <Button variant="outline" className="w-full justify-start border-gray-300">
+                      <Calendar className="h-4 w-4 mr-2" />
+                      Kalendár rezervácií
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+
+              {/* Booking Status Overview */}
+              <Card className="bg-white border-gray-200 shadow-lg">
+                <CardHeader className="border-b border-gray-200">
+                  <CardTitle className="text-lg font-semibold text-gray-800">Stav rezervácií</CardTitle>
+                </CardHeader>
+                <CardContent className="p-6 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <div className="w-3 h-3 bg-yellow-500 rounded-full mr-3"></div>
+                      <span className="text-gray-700">Čakajú na potvrdenie</span>
+                    </div>
+                    <span className="font-medium text-gray-800">{stats.pendingBookings}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <div className="w-3 h-3 bg-green-500 rounded-full mr-3"></div>
+                      <span className="text-gray-700">Potvrdené</span>
+                    </div>
+                    <span className="font-medium text-gray-800">{stats.confirmedBookings}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <div className="w-3 h-3 bg-blue-500 rounded-full mr-3"></div>
+                      <span className="text-gray-700">Ukončené</span>
+                    </div>
+                    <span className="font-medium text-gray-800">{stats.completedBookings}</span>
                   </div>
                 </CardContent>
               </Card>
-            )}
+
+              {/* Performance Alert */}
+              {stats.pendingBookings > 0 && (
+                <Card className="bg-amber-50 border-amber-200 shadow-lg">
+                  <CardContent className="p-6">
+                    <div className="flex items-start">
+                      <AlertCircle className="h-5 w-5 text-amber-600 mr-3 mt-0.5" />
+                      <div>
+                        <h4 className="font-medium text-amber-800 mb-1">Pozor!</h4>
+                        <p className="text-amber-700 text-sm">
+                          Máte {stats.pendingBookings} rezervácií čakajúcich na potvrdenie. Rýchle odpovede zlepšujú
+                          vaše hodnotenie.
+                        </p>
+                        <Link href="/host/bookings?status=pending">
+                          <Button size="sm" className="mt-3 bg-amber-500 hover:bg-amber-600 text-white">
+                            Potvrdiť rezervácie
+                          </Button>
+                        </Link>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </RoleGuard>
   )
 }

@@ -1,51 +1,25 @@
 import { createClient } from "@supabase/supabase-js"
 import type { Database } from "@/types/database"
 
-// Vytvorenie Supabase klienta pre použitie na strane klienta (browser)
-const createClientSide = () => {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+// Check if environment variables are available
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-  if (!supabaseUrl || !supabaseAnonKey) {
-    console.warn("Supabase environment variables nie sú nastavené, používa sa mock autentifikácia")
-    return null
-  }
+// Create Supabase client only if environment variables are available
+export const supabase =
+  supabaseUrl && supabaseAnonKey
+    ? createClient<Database>(supabaseUrl, supabaseAnonKey, {
+        auth: {
+          autoRefreshToken: true,
+          persistSession: true,
+          detectSessionInUrl: true,
+        },
+      })
+    : null
 
-  return createClient<Database>(supabaseUrl, supabaseAnonKey, {
-    auth: {
-      autoRefreshToken: true,
-      persistSession: true,
-      detectSessionInUrl: true,
-    },
-  })
-}
-
-// Singleton pattern pre klientskú stranu
-let clientSideInstance: ReturnType<typeof createClient<Database>> | null = null
-
-export const getSupabaseBrowser = () => {
-  if (typeof window === "undefined") {
-    return null
-  }
-
-  if (clientSideInstance !== null) return clientSideInstance
-
-  try {
-    clientSideInstance = createClientSide()
-    return clientSideInstance
-  } catch (error) {
-    console.warn("Nepodarilo sa vytvoriť Supabase klient, používa sa mock autentifikácia:", error)
-    clientSideInstance = null
-    return null
-  }
-}
-
-// Export pre jednoduchšie použitie v komponentoch
-export const supabase = typeof window !== "undefined" ? getSupabaseBrowser() : null
-
-// Mock autentifikačné funkcie pre fallback
+// Mock authentication functions for fallback
 const mockSignUp = async (email: string, password: string, userData: any) => {
-  // Simulácia registrácie
+  // Simulation of registration
   const mockUser = {
     id: `mock-${Date.now()}`,
     email,
@@ -53,7 +27,9 @@ const mockSignUp = async (email: string, password: string, userData: any) => {
     created_at: new Date().toISOString(),
   }
 
-  localStorage.setItem("espacero_user", JSON.stringify(mockUser))
+  if (typeof window !== "undefined") {
+    localStorage.setItem("espacero_user", JSON.stringify(mockUser))
+  }
 
   return {
     data: { user: mockUser },
@@ -62,18 +38,20 @@ const mockSignUp = async (email: string, password: string, userData: any) => {
 }
 
 const mockSignIn = async (email: string, password: string) => {
-  // Simulácia prihlásenia
+  // Simulation of sign in
   const mockUser = {
     id: `mock-${Date.now()}`,
     email,
     user_metadata: {
       full_name: email.split("@")[0],
-      user_role: "guest",
+      user_role: "client",
     },
     created_at: new Date().toISOString(),
   }
 
-  localStorage.setItem("espacero_user", JSON.stringify(mockUser))
+  if (typeof window !== "undefined") {
+    localStorage.setItem("espacero_user", JSON.stringify(mockUser))
+  }
 
   return {
     data: { user: mockUser },
@@ -82,20 +60,20 @@ const mockSignIn = async (email: string, password: string) => {
 }
 
 const mockSignOut = async () => {
-  localStorage.removeItem("espacero_user")
+  if (typeof window !== "undefined") {
+    localStorage.removeItem("espacero_user")
+  }
   return { error: null }
 }
 
-// Hlavné autentifikačné funkcie
+// Main authentication functions
 export const signUp = async (email: string, password: string, userData: any) => {
-  const client = getSupabaseBrowser()
-
-  if (!client) {
+  if (!supabase) {
     return mockSignUp(email, password, userData)
   }
 
   try {
-    const { data, error } = await client.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -104,74 +82,71 @@ export const signUp = async (email: string, password: string, userData: any) => 
     })
     return { data, error }
   } catch (error) {
-    console.error("Chyba pri registrácii:", error)
+    console.error("Error during registration:", error)
     return { data: null, error }
   }
 }
 
 export const signIn = async (email: string, password: string) => {
-  const client = getSupabaseBrowser()
-
-  if (!client) {
+  if (!supabase) {
     return mockSignIn(email, password)
   }
 
   try {
-    const { data, error } = await client.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     })
     return { data, error }
   } catch (error) {
-    console.error("Chyba pri prihlásení:", error)
+    console.error("Error during sign in:", error)
     return { data: null, error }
   }
 }
 
 export const signOut = async () => {
-  const client = getSupabaseBrowser()
-
-  if (!client) {
+  if (!supabase) {
     return mockSignOut()
   }
 
   try {
-    const { error } = await client.auth.signOut()
+    const { error } = await supabase.auth.signOut()
     return { error }
   } catch (error) {
-    console.error("Chyba pri odhlásení:", error)
+    console.error("Error during sign out:", error)
     return { error }
   }
 }
 
 export const getCurrentUser = async () => {
-  const client = getSupabaseBrowser()
-
-  if (!client) {
-    const savedUser = localStorage.getItem("espacero_user")
-    return savedUser ? JSON.parse(savedUser) : null
+  if (!supabase) {
+    if (typeof window !== "undefined") {
+      const savedUser = localStorage.getItem("espacero_user")
+      return savedUser ? JSON.parse(savedUser) : null
+    }
+    return null
   }
 
   try {
     const {
       data: { user },
-    } = await client.auth.getUser()
+    } = await supabase.auth.getUser()
     return user
   } catch (error) {
-    console.error("Chyba pri získavaní používateľa:", error)
+    console.error("Error getting user:", error)
     return null
   }
 }
 
 export const getSession = async () => {
-  const client = getSupabaseBrowser()
-
-  if (!client) {
-    const savedUser = localStorage.getItem("espacero_user")
-    if (savedUser) {
-      return {
-        user: JSON.parse(savedUser),
-        access_token: "mock-token",
+  if (!supabase) {
+    if (typeof window !== "undefined") {
+      const savedUser = localStorage.getItem("espacero_user")
+      if (savedUser) {
+        return {
+          user: JSON.parse(savedUser),
+          access_token: "mock-token",
+        }
       }
     }
     return null
@@ -180,10 +155,10 @@ export const getSession = async () => {
   try {
     const {
       data: { session },
-    } = await client.auth.getSession()
+    } = await supabase.auth.getSession()
     return session
   } catch (error) {
-    console.error("Chyba pri získavaní session:", error)
+    console.error("Error getting session:", error)
     return null
   }
 }

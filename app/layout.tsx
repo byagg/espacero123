@@ -9,8 +9,8 @@ import { AuthProvider } from "@/hooks/use-auth"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "ESPACERO - Rezervácia priestorov na Slovensku",
-  description: "Nájdite a rezervujte si konferenčné miestnosti, coworking priestory a event haly v celom Slovensku.",
+  title: "ESPACERO - Prenájom priestorov",
+  description: "Najlepšia platforma pre prenájom priestorov na Slovensku",
     generator: 'v0.dev'
 }
 

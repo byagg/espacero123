@@ -13,14 +13,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Menu, X, Search, Heart, Calendar, User, LogOut, Home, Settings, Shield } from "lucide-react"
+import { Menu, X, Search, Heart, Calendar, User, LogOut, Home, Settings, Shield, Building } from "lucide-react"
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
   const pathname = usePathname()
-  const { user, signOut, loading } = useAuth()
+  const { user, signOut, loading, isAdmin, isHost, isClient, getUserRole } = useAuth()
 
   useEffect(() => {
     setIsMounted(true)
@@ -37,7 +37,6 @@ export function Navbar() {
   const handleSignOut = async () => {
     try {
       await signOut()
-      window.location.href = "/"
     } catch (error) {
       console.error("Sign out error:", error)
     }
@@ -49,6 +48,7 @@ export function Navbar() {
 
   const navLinks = [
     { name: "Domov", href: "/", icon: <Home className="h-5 w-5" /> },
+    { name: "Priestory", href: "/venues", icon: <Building className="h-5 w-5" /> },
     { name: "Vyhľadávanie", href: "/search", icon: <Search className="h-5 w-5" /> },
     { name: "FAQ", href: "/faq", icon: <Shield className="h-5 w-5" /> },
     { name: "Kontakt", href: "/contact", icon: <Settings className="h-5 w-5" /> },
@@ -60,12 +60,12 @@ export function Navbar() {
   ]
 
   const hostLinks = [
-    { name: "Dashboard", href: "/host/dashboard", icon: <Home className="h-5 w-5" /> },
-    { name: "Moje priestory", href: "/host/venues", icon: <Search className="h-5 w-5" /> },
-    { name: "Rezervácie", href: "/host/bookings", icon: <Calendar className="h-5 w-5" /> },
+    { name: "Host Dashboard", href: "/host", icon: <Home className="h-5 w-5" /> },
+    { name: "Moje priestory", href: "/host/venues", icon: <Building className="h-5 w-5" /> },
+    { name: "Rezervácie hostov", href: "/host/bookings", icon: <Calendar className="h-5 w-5" /> },
   ]
 
-  const adminLinks = [{ name: "Admin Dashboard", href: "/admin/dashboard", icon: <Shield className="h-5 w-5" /> }]
+  const adminLinks = [{ name: "Admin Dashboard", href: "/admin", icon: <Shield className="h-5 w-5" /> }]
 
   // Don't render anything until mounted to avoid hydration issues
   if (!isMounted) {
@@ -118,11 +118,14 @@ export function Navbar() {
             {!loading && user ? (
               <>
                 <div className="hidden md:flex md:items-center md:space-x-4">
-                  <Link href="/venues/add">
-                    <Button variant="outline" className="border-amber-500 text-amber-500">
-                      Pridať priestor
-                    </Button>
-                  </Link>
+                  {/* Show "Add Venue" button only for hosts and admins */}
+                  {isHost() && (
+                    <Link href="/venues/add">
+                      <Button variant="outline" className="border-amber-500 text-amber-500">
+                        Pridať priestor
+                      </Button>
+                    </Link>
+                  )}
 
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -140,7 +143,9 @@ export function Navbar() {
                           {user.user_metadata?.full_name || "Používateľ"}
                         </p>
                         <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                        <p className="text-xs text-amber-600 font-medium capitalize">{getUserRole() || "client"}</p>
                       </div>
+
                       <DropdownMenuSeparator />
 
                       <DropdownMenuItem asChild>
@@ -149,6 +154,7 @@ export function Navbar() {
                         </Link>
                       </DropdownMenuItem>
 
+                      {/* Client links - available for all logged users */}
                       {authLinks.map((link) => (
                         <DropdownMenuItem key={link.href} asChild>
                           <Link href={link.href} className="w-full cursor-pointer">
@@ -157,7 +163,8 @@ export function Navbar() {
                         </DropdownMenuItem>
                       ))}
 
-                      {user.user_metadata?.user_role === "host" && (
+                      {/* Host links - only for hosts and admins */}
+                      {isHost() && (
                         <>
                           <DropdownMenuSeparator />
                           {hostLinks.map((link) => (
@@ -170,7 +177,8 @@ export function Navbar() {
                         </>
                       )}
 
-                      {user.user_metadata?.user_role === "admin" && (
+                      {/* Admin links - only for admins */}
+                      {isAdmin() && (
                         <>
                           <DropdownMenuSeparator />
                           {adminLinks.map((link) => (
@@ -250,7 +258,9 @@ export function Navbar() {
                 <>
                   <li className="pt-4">
                     <div className="px-3">
-                      <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Používateľ</p>
+                      <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+                        {getUserRole() || "client"}
+                      </p>
                     </div>
                   </li>
                   <li>
@@ -279,6 +289,44 @@ export function Navbar() {
                       </Link>
                     </li>
                   ))}
+
+                  {/* Host links for mobile */}
+                  {isHost() &&
+                    hostLinks.map((link) => (
+                      <li key={link.href}>
+                        <Link
+                          href={link.href}
+                          className={`flex items-center rounded-md px-3 py-2 text-base font-medium ${
+                            isActive(link.href)
+                              ? "bg-amber-50 text-amber-500"
+                              : "text-gray-700 hover:bg-gray-50 hover:text-amber-500"
+                          }`}
+                          onClick={closeMenu}
+                        >
+                          <span className="mr-3">{link.icon}</span>
+                          {link.name}
+                        </Link>
+                      </li>
+                    ))}
+
+                  {/* Admin links for mobile */}
+                  {isAdmin() &&
+                    adminLinks.map((link) => (
+                      <li key={link.href}>
+                        <Link
+                          href={link.href}
+                          className={`flex items-center rounded-md px-3 py-2 text-base font-medium ${
+                            isActive(link.href)
+                              ? "bg-amber-50 text-amber-500"
+                              : "text-gray-700 hover:bg-gray-50 hover:text-amber-500"
+                          }`}
+                          onClick={closeMenu}
+                        >
+                          <span className="mr-3">{link.icon}</span>
+                          {link.name}
+                        </Link>
+                      </li>
+                    ))}
 
                   <li className="pt-4">
                     <button
