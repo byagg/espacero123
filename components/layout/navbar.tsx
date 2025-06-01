@@ -20,7 +20,7 @@ export function Navbar() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
   const pathname = usePathname()
-  const { user, signOut } = useAuth()
+  const { user, signOut, loading } = useAuth()
 
   useEffect(() => {
     setIsMounted(true)
@@ -67,6 +67,26 @@ export function Navbar() {
 
   const adminLinks = [{ name: "Admin Dashboard", href: "/admin/dashboard", icon: <Shield className="h-5 w-5" /> }]
 
+  // Don't render anything until mounted to avoid hydration issues
+  if (!isMounted) {
+    return (
+      <header className="sticky top-0 z-40 w-full border-b border-gray-200 bg-white">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
+          <div className="flex items-center">
+            <Link href="/" className="flex items-center">
+              <span className="text-xl font-bold text-amber-500">ESPACERO</span>
+            </Link>
+          </div>
+          <div className="flex items-center space-x-4">
+            <div className="hidden md:block">
+              <Button className="bg-amber-500 text-white">Prihlásiť sa</Button>
+            </div>
+          </div>
+        </div>
+      </header>
+    )
+  }
+
   return (
     <>
       {/* Desktop Navigation */}
@@ -95,7 +115,7 @@ export function Navbar() {
           </div>
 
           <div className="flex items-center space-x-4">
-            {isMounted && user ? (
+            {!loading && user ? (
               <>
                 <div className="hidden md:flex md:items-center md:space-x-4">
                   <Link href="/venues/add">
@@ -226,7 +246,7 @@ export function Navbar() {
                 </li>
               ))}
 
-              {isMounted && user ? (
+              {!loading && user ? (
                 <>
                   <li className="pt-4">
                     <div className="px-3">
@@ -260,70 +280,6 @@ export function Navbar() {
                     </li>
                   ))}
 
-                  {user.user_metadata?.user_role === "host" && (
-                    <>
-                      <li className="pt-4">
-                        <div className="px-3">
-                          <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Hostiteľ</p>
-                        </div>
-                      </li>
-                      {hostLinks.map((link) => (
-                        <li key={link.href}>
-                          <Link
-                            href={link.href}
-                            className={`flex items-center rounded-md px-3 py-2 text-base font-medium ${
-                              isActive(link.href)
-                                ? "bg-amber-50 text-amber-500"
-                                : "text-gray-700 hover:bg-gray-50 hover:text-amber-500"
-                            }`}
-                            onClick={closeMenu}
-                          >
-                            <span className="mr-3">{link.icon}</span>
-                            {link.name}
-                          </Link>
-                        </li>
-                      ))}
-                      <li>
-                        <Link
-                          href="/venues/add"
-                          className="flex items-center rounded-md px-3 py-2 text-base font-medium text-amber-500 hover:bg-amber-50"
-                          onClick={closeMenu}
-                        >
-                          <span className="mr-3">
-                            <Home className="h-5 w-5" />
-                          </span>
-                          Pridať priestor
-                        </Link>
-                      </li>
-                    </>
-                  )}
-
-                  {user.user_metadata?.user_role === "admin" && (
-                    <>
-                      <li className="pt-4">
-                        <div className="px-3">
-                          <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Admin</p>
-                        </div>
-                      </li>
-                      {adminLinks.map((link) => (
-                        <li key={link.href}>
-                          <Link
-                            href={link.href}
-                            className={`flex items-center rounded-md px-3 py-2 text-base font-medium ${
-                              isActive(link.href)
-                                ? "bg-amber-50 text-amber-500"
-                                : "text-gray-700 hover:bg-gray-50 hover:text-amber-500"
-                            }`}
-                            onClick={closeMenu}
-                          >
-                            <span className="mr-3">{link.icon}</span>
-                            {link.name}
-                          </Link>
-                        </li>
-                      ))}
-                    </>
-                  )}
-
                   <li className="pt-4">
                     <button
                       onClick={() => {
@@ -356,7 +312,7 @@ export function Navbar() {
       )}
 
       {/* Auth Modal */}
-      <AuthModal open={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
+      <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
     </>
   )
 }

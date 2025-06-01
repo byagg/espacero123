@@ -1,122 +1,183 @@
+"use client"
+
+import type React from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Search, MapPin, Users, ChefHat, Coffee, Wine, Calendar, Phone, Heart, User } from "lucide-react"
-import Link from "next/link"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Search, MapPin, Users, Clock, Star, Wifi, Car, Coffee, Monitor } from "lucide-react"
+import { AuthModal } from "@/components/shared/auth-modal"
+
+// Mock data for featured venues
+const featuredVenues = [
+  {
+    id: 1,
+    name: "Moderná konferenčná miestnosť",
+    location: "Bratislava - Centrum",
+    price: 25,
+    rating: 4.8,
+    reviews: 124,
+    capacity: 12,
+    image: "/placeholder.svg?height=200&width=300&text=Conference+Room",
+    amenities: ["Wifi", "Projektor", "Káva"],
+    type: "Konferenčná miestnosť",
+  },
+  {
+    id: 2,
+    name: "Kreatívny coworking priestor",
+    location: "Košice - Staré Mesto",
+    price: 15,
+    rating: 4.6,
+    reviews: 89,
+    capacity: 20,
+    image: "/placeholder.svg?height=200&width=300&text=Coworking+Space",
+    amenities: ["Wifi", "Parkovanie", "Kuchynka"],
+    type: "Coworking",
+  },
+  {
+    id: 3,
+    name: "Elegantná event hala",
+    location: "Žilina - Centrum",
+    price: 80,
+    rating: 4.9,
+    reviews: 67,
+    capacity: 100,
+    image: "/placeholder.svg?height=200&width=300&text=Event+Hall",
+    amenities: ["Wifi", "Parkovanie", "Catering"],
+    type: "Event priestor",
+  },
+]
+
+const amenityIcons = {
+  Wifi: Wifi,
+  Projektor: Monitor,
+  Káva: Coffee,
+  Parkovanie: Car,
+  Kuchynka: Coffee,
+  Catering: Coffee,
+}
 
 export default function HomePage() {
+  const [searchQuery, setSearchQuery] = useState("")
+  const [showAuthModal, setShowAuthModal] = useState(false)
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+    // Implement search functionality
+    console.log("Searching for:", searchQuery)
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-800">
+    <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <section className="relative py-12 md:py-20 px-4 bg-gradient-to-br from-amber-50 to-amber-100">
-        <div className="container mx-auto text-center">
-          <h1 className="text-4xl md:text-7xl font-bold mb-4 md:mb-6 text-amber-600">ESPACERO</h1>
-          <p className="text-lg md:text-2xl text-gray-700 mb-6 md:mb-8 max-w-3xl mx-auto font-medium">
-            Prenájom priestorov na Slovensku
-          </p>
-          <p className="text-base md:text-lg text-gray-600 mb-8 md:mb-12 max-w-2xl mx-auto">
-            Nájdite perfektný priestor pre vašu súkromnú udalosť, oslavu, firemné podujatie alebo akúkoľvek príležitosť
-          </p>
+      <section className="bg-gradient-to-br from-amber-50 to-orange-100 py-20">
+        <div className="container mx-auto px-4">
+          <div className="text-center max-w-4xl mx-auto">
+            <h1 className="text-5xl font-bold text-gray-900 mb-6">Nájdite perfektný priestor pre vaše podujatie</h1>
+            <p className="text-xl text-gray-600 mb-8">
+              Rezervujte si konferenčné miestnosti, coworking priestory a event haly v celom Slovensku jednoducho a
+              rýchlo.
+            </p>
 
-          {/* Search Bar */}
-          <div className="max-w-4xl mx-auto bg-white rounded-2xl p-4 md:p-6 shadow-xl border border-gray-200">
-            <div className="grid grid-cols-1 gap-4">
-              <div className="relative">
-                <MapPin className="absolute left-3 top-3 h-5 w-5 text-gray-500" />
-                <Input
-                  placeholder="Mesto (napr. Bratislava)"
-                  className="pl-10 bg-gray-50 border-gray-300 text-gray-800 placeholder:text-gray-500"
-                />
+            {/* Search Form */}
+            <form onSubmit={handleSearch} className="max-w-2xl mx-auto">
+              <div className="flex gap-4 bg-white p-2 rounded-lg shadow-lg">
+                <div className="flex-1 relative">
+                  <MapPin className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                  <Input
+                    placeholder="Kde hľadáte priestor? (napr. Bratislava)"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 border-0 focus:ring-0 h-12"
+                  />
+                </div>
+                <Button type="submit" className="bg-amber-500 hover:bg-amber-600 h-12 px-8">
+                  <Search className="h-5 w-5 mr-2" />
+                  Hľadať
+                </Button>
               </div>
-              <div className="relative">
-                <Calendar className="absolute left-3 top-3 h-5 w-5 text-gray-500" />
-                <Input type="date" className="pl-10 bg-gray-50 border-gray-300 text-gray-800" />
-              </div>
-              <div className="relative">
-                <Users className="absolute left-3 top-3 h-5 w-5 text-gray-500" />
-                <Input
-                  placeholder="Počet hostí"
-                  type="number"
-                  className="pl-10 bg-gray-50 border-gray-300 text-gray-800 placeholder:text-gray-500"
-                />
-              </div>
-              <Button className="bg-amber-500 hover:bg-amber-600 text-white font-semibold shadow-lg">
-                <Search className="mr-2 h-5 w-5" />
-                Hľadať priestory
-              </Button>
-            </div>
-          </div>
+            </form>
 
-          {/* Quick Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mt-8 md:mt-12 max-w-3xl mx-auto">
-            <div className="text-center">
-              <div className="text-2xl md:text-3xl font-bold text-amber-600">320+</div>
-              <div className="text-gray-600">Priestorov</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl md:text-3xl font-bold text-amber-600">15</div>
-              <div className="text-gray-600">Miest</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl md:text-3xl font-bold text-amber-600">2,500+</div>
-              <div className="text-gray-600">Spokojných hostí</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl md:text-3xl font-bold text-amber-600">4.8</div>
-              <div className="text-gray-600">Priemerné hodnotenie</div>
+            {/* Quick Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-amber-600 mb-2">500+</div>
+                <div className="text-gray-600">Dostupných priestorov</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-amber-600 mb-2">50+</div>
+                <div className="text-gray-600">Miest na Slovensku</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-amber-600 mb-2">10k+</div>
+                <div className="text-gray-600">Spokojných zákazníkov</div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Categories */}
-      <section className="py-10 md:py-16 px-4 bg-white">
-        <div className="container mx-auto">
-          <h2 className="text-2xl md:text-3xl font-bold text-center mb-4 text-gray-800">Kategórie priestorov</h2>
-          <p className="text-center text-gray-600 mb-8 md:mb-12 max-w-2xl mx-auto">
-            Vyberte si z rôznych typov priestorov podľa charakteru vašej udalosti
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-            {[
-              {
-                icon: ChefHat,
-                title: "Reštaurácie",
-                count: "120+ priestorov",
-                description: "Elegantné reštaurácie pre rodinné oslavy a firemné podujatia",
-                priceRange: "€35-85/hod",
-              },
-              {
-                icon: Coffee,
-                title: "Kaviarne",
-                count: "85+ priestorov",
-                description: "Útulné kaviarne ideálne pre menšie stretnutia a workshopy",
-                priceRange: "€20-45/hod",
-              },
-              {
-                icon: Wine,
-                title: "Bary",
-                count: "65+ priestorov",
-                description: "Štýlové bary pre večierky a neformálne podujatia",
-                priceRange: "€30-70/hod",
-              },
-              {
-                icon: Calendar,
-                title: "Event sály",
-                count: "45+ priestorov",
-                description: "Veľké sály pre konferencie, svadby a veľké oslavy",
-                priceRange: "€60-150/hod",
-              },
-            ].map((category, index) => (
-              <Card
-                key={index}
-                className="bg-white border-gray-200 hover:shadow-lg transition-all duration-300 cursor-pointer group hover:border-amber-200"
-              >
-                <CardContent className="p-4 md:p-6 text-center">
-                  <category.icon className="h-10 w-10 md:h-12 md:w-12 text-amber-500 mx-auto mb-4 group-hover:scale-110 transition-transform" />
-                  <h3 className="text-lg md:text-xl font-semibold text-gray-800 mb-2">{category.title}</h3>
-                  <p className="text-amber-600 font-medium mb-2 md:mb-3">{category.count}</p>
-                  <p className="text-gray-600 text-sm mb-2 md:mb-3">{category.description}</p>
-                  <p className="text-gray-700 font-medium text-sm">{category.priceRange}</p>
+      {/* Featured Venues */}
+      <section className="py-16">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Odporúčané priestory</h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Objavte najlepšie hodnotené priestory v rôznych mestách Slovenska
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {featuredVenues.map((venue) => (
+              <Card key={venue.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                <div className="relative">
+                  <img src={venue.image || "/placeholder.svg"} alt={venue.name} className="w-full h-48 object-cover" />
+                  <Badge className="absolute top-3 left-3 bg-amber-500">{venue.type}</Badge>
+                </div>
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <CardTitle className="text-lg">{venue.name}</CardTitle>
+                      <CardDescription className="flex items-center mt-1">
+                        <MapPin className="h-4 w-4 mr-1" />
+                        {venue.location}
+                      </CardDescription>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-2xl font-bold text-amber-600">€{venue.price}</div>
+                      <div className="text-sm text-gray-500">za hodinu</div>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center">
+                      <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                      <span className="ml-1 font-medium">{venue.rating}</span>
+                      <span className="ml-1 text-gray-500">({venue.reviews})</span>
+                    </div>
+                    <div className="flex items-center text-gray-600">
+                      <Users className="h-4 w-4 mr-1" />
+                      <span>{venue.capacity} osôb</span>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {venue.amenities.map((amenity) => {
+                      const IconComponent = amenityIcons[amenity as keyof typeof amenityIcons]
+                      return (
+                        <div key={amenity} className="flex items-center bg-gray-100 rounded-full px-3 py-1 text-sm">
+                          {IconComponent && <IconComponent className="h-3 w-3 mr-1" />}
+                          {amenity}
+                        </div>
+                      )
+                    })}
+                  </div>
+
+                  <Button className="w-full bg-amber-500 hover:bg-amber-600" onClick={() => setShowAuthModal(true)}>
+                    Rezervovať
+                  </Button>
                 </CardContent>
               </Card>
             ))}
@@ -124,61 +185,61 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-10 md:py-16 px-4 bg-gradient-to-r from-amber-500 to-amber-600">
-        <div className="container mx-auto text-center">
-          <h2 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6 text-white">Máte priestor na prenájom?</h2>
-          <p className="text-lg md:text-xl text-amber-100 mb-6 md:mb-8 max-w-2xl mx-auto">
-            Pridajte svoj priestor na ESPACERO a začnite zarábať prenájmom reštaurácie, kaviarne, sály alebo iného
-            priestoru.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8 max-w-4xl mx-auto">
-            <div className="text-center text-amber-100">
-              <div className="text-xl md:text-2xl font-bold text-white">€2,500</div>
-              <div className="text-sm">Priemerný mesačný príjem</div>
-            </div>
-            <div className="text-center text-amber-100">
-              <div className="text-xl md:text-2xl font-bold text-white">85%</div>
-              <div className="text-sm">Priemerná obsadenosť</div>
-            </div>
-            <div className="text-center text-amber-100">
-              <div className="text-xl md:text-2xl font-bold text-white">3 mesiace</div>
-              <div className="text-sm">zdarma</div>
-            </div>
+      {/* How it Works */}
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Ako to funguje</h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">Rezervácia priestoru je jednoduchá a rýchla</p>
           </div>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-white text-amber-600 hover:bg-gray-100 font-semibold">
-              Pridať priestor zadarmo
-            </Button>
-            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-amber-600">
-              <Phone className="mr-2 h-5 w-5" />
-              Zavolajte nám: +421 900 123 456
-            </Button>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="text-center">
+              <div className="bg-amber-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Search className="h-8 w-8 text-amber-600" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">1. Vyhľadajte</h3>
+              <p className="text-gray-600">Nájdite priestor podľa lokality, kapacity a vybavenia</p>
+            </div>
+
+            <div className="text-center">
+              <div className="bg-amber-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Clock className="h-8 w-8 text-amber-600" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">2. Rezervujte</h3>
+              <p className="text-gray-600">Vyberte si termín a čas, ktorý vám vyhovuje</p>
+            </div>
+
+            <div className="text-center">
+              <div className="bg-amber-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Users className="h-8 w-8 text-amber-600" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">3. Využívajte</h3>
+              <p className="text-gray-600">Príďte a využívajte priestor pre vaše podujatie</p>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Mobile Bottom Navigation */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2 z-50">
-        <div className="flex justify-around">
-          <Link href="/" className="flex flex-col items-center text-amber-500">
-            <Search className="h-6 w-6" />
-            <span className="text-xs mt-1">Hľadať</span>
-          </Link>
-          <Link href="/favorites" className="flex flex-col items-center text-gray-500">
-            <Heart className="h-6 w-6" />
-            <span className="text-xs mt-1">Obľúbené</span>
-          </Link>
-          <Link href="/bookings" className="flex flex-col items-center text-gray-500">
-            <Calendar className="h-6 w-6" />
-            <span className="text-xs mt-1">Rezervácie</span>
-          </Link>
-          <Link href="/profile" className="flex flex-col items-center text-gray-500">
-            <User className="h-6 w-6" />
-            <span className="text-xs mt-1">Profil</span>
-          </Link>
+      {/* CTA Section */}
+      <section className="py-16 bg-gradient-to-r from-amber-500 to-orange-500">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-3xl font-bold text-white mb-4">Pripravení začať?</h2>
+          <p className="text-amber-100 mb-8 max-w-2xl mx-auto">
+            Zaregistrujte sa ešte dnes a získajte prístup k stovkám priestorov po celom Slovensku
+          </p>
+          <Button
+            size="lg"
+            className="bg-white text-amber-600 hover:bg-gray-100"
+            onClick={() => setShowAuthModal(true)}
+          >
+            Zaregistrovať sa zadarmo
+          </Button>
         </div>
-      </div>
+      </section>
+
+      {/* Auth Modal */}
+      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </div>
   )
 }

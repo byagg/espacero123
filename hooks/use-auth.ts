@@ -1,20 +1,20 @@
 "use client"
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
-import { createClient } from "@supabase/supabase-js"
-import type { User, AuthError } from "@supabase/supabase-js"
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+import {
+  signIn as supabaseSignIn,
+  signUp as supabaseSignUp,
+  signOut as supabaseSignOut,
+  getCurrentUser,
+} from "@/lib/supabase"
+import type { User } from "@supabase/supabase-js"
 
 interface AuthContextType {
   user: User | null
   loading: boolean
-  signIn: (email: string, password: string) => Promise<{ data: any; error: AuthError | null }>
-  signUp: (email: string, password: string, metadata?: any) => Promise<{ data: any; error: AuthError | null }>
-  signOut: () => Promise<{ error: AuthError | null }>
+  signIn: (email: string, password: string) => Promise<{ data: any; error: any }>
+  signUp: (email: string, password: string, metadata?: any) => Promise<{ data: any; error: any }>
+  signOut: () => Promise<{ error: any }>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -27,10 +27,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Get initial session
     const getInitialSession = async () => {
       try {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession()
-        setUser(session?.user ?? null)
+        const currentUser = await getCurrentUser()
+        setUser(currentUser)
       } catch (error) {
         console.error("Error getting initial session:", error)
       } finally {
@@ -40,53 +38,53 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     getInitialSession()
 
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setUser(session?.user ?? null)
-      setLoading(false)
-    })
+    // Check for session changes periodically
+    const interval = setInterval(async () => {
+      try {
+        const currentUser = await getCurrentUser()
+        setUser(currentUser)
+      } catch (error) {
+        console.error("Error checking session:", error)
+      }
+    }, 30000) // Check every 30 seconds
 
-    return () => subscription.unsubscribe()
+    return () => clearInterval(interval)
   }, [])
 
   const signIn = async (email: string, password: string) => {
     try {
-      const result = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
+      const result = await supabaseSignIn(email, password)
+      if (result.data?.user) {
+        setUser(result.data.user)
+      }
       return result
     } catch (error) {
       console.error("Sign in error:", error)
-      return { data: null, error: error as AuthError }
+      return { data: null, error }
     }
   }
 
   const signUp = async (email: string, password: string, metadata?: any) => {
     try {
-      const result = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: metadata,
-        },
-      })
+      const result = await supabaseSignUp(email, password, metadata)
+      if (result.data?.user) {
+        setUser(result.data.user)
+      }
       return result
     } catch (error) {
       console.error("Sign up error:", error)
-      return { data: null, error: error as AuthError }
+      return { data: null, error }
     }
   }
 
   const signOut = async () => {
     try {
-      const result = await supabase.auth.signOut()
+      const result = await supabaseSignOut()
+      setUser(null)
       return result
     } catch (error) {
       console.error("Sign out error:", error)
-      return { error: error as AuthError }
+      return { error }
     }
   }
 

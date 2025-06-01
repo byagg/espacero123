@@ -9,15 +9,15 @@ import { X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 interface AuthModalProps {
-  open: boolean
+  isOpen: boolean
   onClose: () => void
 }
 
-export function AuthModal({ open, onClose }: AuthModalProps) {
+export function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [activeTab, setActiveTab] = useState<string>("login")
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[480px] p-0 overflow-hidden bg-white border-gray-200">
         {/* Header */}
         <div className="relative bg-amber-500 px-6 py-8 text-white">
@@ -25,7 +25,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
             variant="ghost"
             size="sm"
             onClick={onClose}
-            className="absolute top-4 right-4 text-white bg-amber-600 h-8 w-8 p-0"
+            className="absolute top-4 right-4 text-white hover:bg-amber-600 h-8 w-8 p-0"
           >
             <X className="h-4 w-4" />
           </Button>
@@ -68,11 +68,11 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
         {/* Footer */}
         <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 text-center">
           <p className="text-sm text-gray-600">
-            Prihlásením súhlasíte s našimi{" "}
+            {"Prihlásením súhlasíte s našimi "}
             <a href="/legal" className="text-amber-600 hover:text-amber-700 font-medium">
               Podmienkami používania
-            </a>{" "}
-            a{" "}
+            </a>
+            {" a "}
             <a href="/legal" className="text-amber-600 hover:text-amber-700 font-medium">
               Zásadami ochrany údajov
             </a>

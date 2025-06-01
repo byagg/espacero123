@@ -205,11 +205,11 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
             className="mt-1 border-gray-300 data-[state=checked]:bg-amber-500 data-[state=checked]:border-amber-500"
           />
           <Label htmlFor="terms" className="text-sm text-gray-600 leading-relaxed">
-            Súhlasím s{" "}
+            {"Súhlasím s "}
             <a href="/legal" className="text-amber-600 hover:text-amber-700 font-medium">
               Podmienkami používania
-            </a>{" "}
-            a{" "}
+            </a>
+            {" a "}
             <a href="/legal" className="text-amber-600 hover:text-amber-700 font-medium">
               Zásadami ochrany údajov
             </a>
