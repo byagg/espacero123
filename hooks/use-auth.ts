@@ -3,7 +3,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
 import { createClient } from "@supabase/supabase-js"
 import type { User, AuthError } from "@supabase/supabase-js"
-import { useRouter } from "next/navigation"
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -108,18 +107,4 @@ export function useAuth() {
     throw new Error("useAuth must be used within an AuthProvider")
   }
   return context
-}
-
-// Pridaj funkciu pre zabezpečenie chránených stránok
-export function useRequireAuth(redirectTo = "/") {
-  const { user, loading } = useAuth()
-  const router = useRouter()
-
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push(redirectTo)
-    }
-  }, [user, loading, router, redirectTo])
-
-  return { user, loading }
 }

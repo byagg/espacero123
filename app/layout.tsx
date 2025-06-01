@@ -3,7 +3,7 @@ import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import { Navbar } from "@/components/layout/navbar"
-import { AuthProvider } from "@/hooks/useAuth"
+import { AuthProvider } from "@/hooks/use-auth"
 import { Suspense } from "react"
 
 const inter = Inter({ subsets: ["latin"] })
@@ -12,25 +12,6 @@ export const metadata: Metadata = {
   title: "ESPACERO - Prenájom priestorov na Slovensku",
   description:
     "Nájdite perfektný priestor pre vašu súkromnú udalosť, oslavu, firemné podujatie alebo akúkoľvek príležitosť",
-  keywords: "prenájom priestorov, event priestory, konferenčné miestnosti, reštaurácie, kaviarne, Slovensko",
-  authors: [{ name: "ESPACERO Team" }],
-  creator: "ESPACERO",
-  publisher: "ESPACERO",
-  openGraph: {
-    title: "ESPACERO - Prenájom priestorov na Slovensku",
-    description:
-      "Nájdite perfektný priestor pre vašu súkromnú udalosť, oslavu, firemné podujatie alebo akúkoľvek príležitosť",
-    url: "https://espacero.sk",
-    siteName: "ESPACERO",
-    locale: "sk_SK",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "ESPACERO - Prenájom priestorov na Slovensku",
-    description:
-      "Nájdite perfektný priestor pre vašu súkromnú udalosť, oslavu, firemné podujatie alebo akúkoľvek príležitosť",
-  },
     generator: 'v0.dev'
 }
 

@@ -57,32 +57,10 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
 
             <TabsContent value="login" className="mt-0">
               <LoginForm onSuccess={onClose} />
-              <div className="mt-4 text-center">
-                <p className="text-sm text-gray-600">
-                  Nemáte účet?{" "}
-                  <button
-                    onClick={() => setActiveTab("register")}
-                    className="text-amber-600 hover:text-amber-700 font-medium"
-                  >
-                    Registrujte sa
-                  </button>
-                </p>
-              </div>
             </TabsContent>
 
             <TabsContent value="register" className="mt-0">
               <RegisterForm onSuccess={() => setActiveTab("login")} />
-              <div className="mt-4 text-center">
-                <p className="text-sm text-gray-600">
-                  Už máte účet?{" "}
-                  <button
-                    onClick={() => setActiveTab("login")}
-                    className="text-amber-600 hover:text-amber-700 font-medium"
-                  >
-                    Prihláste sa
-                  </button>
-                </p>
-              </div>
             </TabsContent>
           </Tabs>
         </div>
