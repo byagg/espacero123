@@ -74,6 +74,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
               onChange={(e) => setEmail(e.target.value)}
               className="pl-10 border-gray-300 bg-white h-12"
               required
+              aria-label="Email"
             />
           </div>
         </div>
@@ -96,6 +97,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
               onChange={(e) => setPassword(e.target.value)}
               className="pl-10 pr-10 border-gray-300 bg-white h-12"
               required
+              aria-label="Heslo"
             />
             <button
               type="button"

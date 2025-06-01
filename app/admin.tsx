@@ -25,6 +25,9 @@ import {
 import { useRouter } from "next/navigation"
 import { AuthModal } from "@/components/auth/auth-modal"
 
+// Pridaj import pre Chart komponent na začiatok súboru
+import { Chart } from "@/components/ui/chart"
+
 interface AdminStats {
   totalUsers: number
   totalHosts: number
@@ -385,6 +388,32 @@ export default function AdminDashboard() {
               </div>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Pridaj tieto grafy do admin dashboardu, pred "Recent Activity" sekciu */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <Chart
+            data={[
+              { name: "Jan", value: 45 },
+              { name: "Feb", value: 62 },
+              { name: "Mar", value: 78 },
+              { name: "Apr", value: 95 },
+              { name: "Máj", value: 110 },
+              { name: "Jún", value: 132 },
+            ]}
+            title="Počet rezervácií za mesiac"
+            type="line"
+          />
+          <Chart
+            data={[
+              { name: "Reštaurácie", value: 120 },
+              { name: "Kaviarne", value: 85 },
+              { name: "Bary", value: 65 },
+              { name: "Event sály", value: 45 },
+            ]}
+            title="Priestory podľa kategórie"
+            colors={["#f59e0b", "#10b981", "#3b82f6", "#8b5cf6"]}
+          />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

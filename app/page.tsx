@@ -1,10 +1,21 @@
+"use client"
+
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Search, MapPin, Users, ChefHat, Coffee, Wine, Calendar, Phone, Heart, User } from "lucide-react"
 import Link from "next/link"
+import { VenueCard } from "@/components/VenueCard"
+import { useVenues } from "@/hooks/useVenues"
+import { useFavorites } from "@/hooks/useFavorites"
 
 export default function HomePage() {
+  const { venues, loading } = useVenues()
+  const { toggleFavorite, isFavorite } = useFavorites()
+
+  // Show only first 6 venues on homepage
+  const featuredVenues = venues.slice(0, 6)
+
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800">
       {/* Hero Section */}
@@ -40,10 +51,12 @@ export default function HomePage() {
                   className="pl-10 bg-gray-50 border-gray-300 text-gray-800 placeholder:text-gray-500"
                 />
               </div>
-              <Button className="bg-amber-500 hover:bg-amber-600 text-white font-semibold shadow-lg">
-                <Search className="mr-2 h-5 w-5" />
-                Hľadať priestory
-              </Button>
+              <Link href="/venues">
+                <Button className="w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold shadow-lg">
+                  <Search className="mr-2 h-5 w-5" />
+                  Hľadať priestory
+                </Button>
+              </Link>
             </div>
           </div>
 
@@ -84,6 +97,7 @@ export default function HomePage() {
                 count: "120+ priestorov",
                 description: "Elegantné reštaurácie pre rodinné oslavy a firemné podujatia",
                 priceRange: "€35-85/hod",
+                type: "restaurant",
               },
               {
                 icon: Coffee,
@@ -91,6 +105,7 @@ export default function HomePage() {
                 count: "85+ priestorov",
                 description: "Útulné kaviarne ideálne pre menšie stretnutia a workshopy",
                 priceRange: "€20-45/hod",
+                type: "cafe",
               },
               {
                 icon: Wine,
@@ -98,6 +113,7 @@ export default function HomePage() {
                 count: "65+ priestorov",
                 description: "Štýlové bary pre večierky a neformálne podujatia",
                 priceRange: "€30-70/hod",
+                type: "bar",
               },
               {
                 icon: Calendar,
@@ -105,22 +121,64 @@ export default function HomePage() {
                 count: "45+ priestorov",
                 description: "Veľké sály pre konferencie, svadby a veľké oslavy",
                 priceRange: "€60-150/hod",
+                type: "event_hall",
               },
             ].map((category, index) => (
-              <Card
-                key={index}
-                className="bg-white border-gray-200 hover:shadow-lg transition-all duration-300 cursor-pointer group hover:border-amber-200"
-              >
-                <CardContent className="p-4 md:p-6 text-center">
-                  <category.icon className="h-10 w-10 md:h-12 md:w-12 text-amber-500 mx-auto mb-4 group-hover:scale-110 transition-transform" />
-                  <h3 className="text-lg md:text-xl font-semibold text-gray-800 mb-2">{category.title}</h3>
-                  <p className="text-amber-600 font-medium mb-2 md:mb-3">{category.count}</p>
-                  <p className="text-gray-600 text-sm mb-2 md:mb-3">{category.description}</p>
-                  <p className="text-gray-700 font-medium text-sm">{category.priceRange}</p>
-                </CardContent>
-              </Card>
+              <Link key={index} href={`/venues?type=${category.type}`}>
+                <Card className="bg-white border-gray-200 hover:shadow-lg transition-all duration-300 cursor-pointer group hover:border-amber-200 h-full">
+                  <CardContent className="p-4 md:p-6 text-center">
+                    <category.icon className="h-10 w-10 md:h-12 md:w-12 text-amber-500 mx-auto mb-4 group-hover:scale-110 transition-transform" />
+                    <h3 className="text-lg md:text-xl font-semibold text-gray-800 mb-2">{category.title}</h3>
+                    <p className="text-amber-600 font-medium mb-2 md:mb-3">{category.count}</p>
+                    <p className="text-gray-600 text-sm mb-2 md:mb-3">{category.description}</p>
+                    <p className="text-gray-700 font-medium text-sm">{category.priceRange}</p>
+                  </CardContent>
+                </Card>
+              </Link>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Featured Venues */}
+      <section className="py-10 md:py-16 px-4 bg-gray-50">
+        <div className="container mx-auto">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">Odporúčané priestory</h2>
+              <p className="text-gray-600">Najlepšie hodnotené priestory v našej ponuke</p>
+            </div>
+            <Link href="/venues">
+              <Button variant="outline" className="border-amber-500 text-amber-600 hover:bg-amber-50">
+                Zobraziť všetky
+              </Button>
+            </Link>
+          </div>
+
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
+                  <div className="h-48 bg-gray-200 animate-pulse" />
+                  <div className="p-4 space-y-3">
+                    <div className="h-6 bg-gray-200 animate-pulse rounded" />
+                    <div className="h-4 bg-gray-200 animate-pulse rounded w-3/4" />
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="h-4 bg-gray-200 animate-pulse rounded" />
+                      <div className="h-4 bg-gray-200 animate-pulse rounded" />
+                    </div>
+                    <div className="h-10 bg-gray-200 animate-pulse rounded" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {featuredVenues.map((venue) => (
+                <VenueCard key={venue.id} venue={venue} onFavorite={toggleFavorite} isFavorite={isFavorite(venue.id)} />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -147,9 +205,11 @@ export default function HomePage() {
             </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-white text-amber-600 hover:bg-gray-100 font-semibold">
-              Pridať priestor zadarmo
-            </Button>
+            <Link href="/host">
+              <Button size="lg" className="bg-white text-amber-600 hover:bg-gray-100 font-semibold">
+                Pridať priestor zadarmo
+              </Button>
+            </Link>
             <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-amber-600">
               <Phone className="mr-2 h-5 w-5" />
               Zavolajte nám: +421 900 123 456
